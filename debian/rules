@@ -1,0 +1,10 @@
+#!/usr/bin/make -f
+%:
+	dh $@
+
+override_dh_auto_install:
+	mkdir -p $$(pwd)/debian/nagios-icinga/usr/lib/nagios/plugins
+	cp check_icinga.rb $$(pwd)/debian/nagios-icinga/usr/lib/nagios/plugins
+
+	mkdir -p $$(pwd)/debian/nagios-icinga/etc/nagios-plugins/config/
+	cp icinga.cfg $$(pwd)/debian/nagios-icinga/etc/nagios-plugins/config/

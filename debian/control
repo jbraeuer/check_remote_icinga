@@ -1,0 +1,11 @@
+Source: nagios-icinga
+Maintainer: Jens Braeuer <braeuer.jens@gmail.com>
+Section: misc
+Priority: optional
+Standards-Version: 2.0.1
+Build-Depends: debhelper (>= 8)
+
+Package: nagios-icinga
+Architecture: all
+Depends: ${ruby:Depends}, ${misc:Depends}, nagios-plugins
+Description: Icinga check
