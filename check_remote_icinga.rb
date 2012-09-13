@@ -45,10 +45,12 @@ module Icinga
       @modes = [:hosts, :services]
       @stdout, @stderr = opts.delete(:stdout), opts.delete(:stderr)
       @options = { :mode => nil,
+                   :debug => false,
                    :min => -1,
                    :warn => 1,
                    :crit => 1,
-                   :url => "http://localhost/icinga",
+                   :url => "http://localhost",
+                   :status_cgi => "cgi-bin/icinga/status.cgi",
                    :username => nil,
                    :password => nil }.merge(opts)
 
@@ -74,12 +76,22 @@ module Icinga
         opts.on("--url [url]", "URL (default: #{@options[:url]})") do |arg|
           @options[:url] = arg
         end
+        opts.on("--status-cgi [path]", "path status.cgi (default: #{@options[:status_cgi]})") do |arg|
+          @options[:status_cgi] = arg
+        end
+        opts.on("-d", "--debug") do
+          @options[:debug] = true
+        end
         opts.on("-h", "--help") do
           @options[:mode] = :help
         end
       end
 
       @parser.parse(args)
+    end
+
+    def debug(msg)
+      puts msg if @options[:debug]
     end
 
     def run
@@ -106,15 +118,16 @@ module Icinga
     end
 
     def check_hosts
-      path = "cgi-bin/status.cgi"
       query = { :hostgroup => "all",
                 :style => "hostdetail",
                 :nostatusheader => nil,
                 :jsonoutput => nil }
-      uri = URI([@options[:url], path].join("/"))
+      uri = URI([@options[:url], @options[:status_cgi]].join("/"))
       params = @options[:excon].merge({ :path => uri.path,
-                                       :query => query,
-                                       :headers => headers })
+                                        :query => query,
+                                        :headers => headers })
+      debug "Will fetch: #{uri.scheme}://#{uri.host}"
+      debug "With param: #{params.inspect}"
       resp = Excon.get("#{uri.scheme}://#{uri.host}", params)
 
       state = parse(validate(resp))
