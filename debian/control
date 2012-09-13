@@ -3,9 +3,9 @@ Maintainer: Jens Braeuer <braeuer.jens@gmail.com>
 Section: misc
 Priority: optional
 Standards-Version: 2.0.1
-Build-Depends: debhelper (>= 8)
+Build-Depends: debhelper (>= 8), ruby-rspec-core
 
 Package: nagios-icinga
 Architecture: all
-Depends: ${ruby:Depends}, ${misc:Depends}, nagios-plugins
+Depends: ${ruby:Depends}, ${misc:Depends}, nagios-plugins, rubygem-excon
 Description: Icinga check
