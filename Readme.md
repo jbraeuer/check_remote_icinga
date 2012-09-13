@@ -22,6 +22,11 @@ cp check_remote_icinga.rb /usr/lib/nagios/plugins
 
 Send me your changes via pull-request.
 
+# Things to improve
+
+1. Better/any support for acknowledged errors
+1. Output click-able link, so user can visit 1st-level Icinga
+
 # License
 
 GPLv3. Let me know if you have other suggestions
