@@ -1,4 +1,5 @@
 *~
 .\#*
-debian/nagios-icinga.debhelper.log
-debian/nagios-icinga
+debian/nagios-remote-icinga.*
+debian/nagios-remote-icinga
+debian/files

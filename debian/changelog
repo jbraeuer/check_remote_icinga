@@ -1,4 +1,4 @@
-nagios-icinga (0.1.0) unstable; urgency=low
+nagios-remote-icinga (0.1.0) unstable; urgency=low
 
   * Packaged as debian package
 
