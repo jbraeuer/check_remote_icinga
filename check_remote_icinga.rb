@@ -140,11 +140,10 @@ module Icinga
     end
 
     def check_services
-      path = "cgi-bin/status.cgi"
       query = { :host => "all",
                 :nostatusheader => nil,
                 :jsonoutput => nil }
-      uri = URI([@options[:url], path].join("/"))
+      uri = URI([@options[:url], @options[:status_cgi]].join("/"))
       params = @options[:excon].merge({ :path => uri.path,
                                        :query => query,
                                        :headers => headers })
