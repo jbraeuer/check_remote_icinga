@@ -1,3 +1,10 @@
+nagios-remote-icinga (0.1.1) unstable; urgency=low
+
+  * --debug switch
+  * --status-cgi switch
+
+ -- Jens Braeuer <braeuer.jens@gmail.com>  Thu, 13 Sep 2012 11:11:11 +0100
+
 nagios-remote-icinga (0.1.0) unstable; urgency=low
 
   * Packaged as debian package
