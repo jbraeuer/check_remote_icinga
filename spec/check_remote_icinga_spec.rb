@@ -252,7 +252,7 @@ module Icinga
           stdout.string.should match(/Timeout after/i)
         end
 
-        it "Will return OK, when all critical services have been acknowledged" do
+        it "Will return OK. Count ack'ed, disabled notifications and scheduled downtimes as 'other'" do
           resp = {
             "cgi_json_version" => "1.7.1",
             "status" => { "service_status" => [{ "passive_checks_enabled"=>true,
@@ -267,7 +267,7 @@ module Icinga
                                                  "active_checks_enabled"=>true,
                                                  "host"=>"search.example.com",
                                                  "duration"=>"9d 15h 19m 44s",
-                                                 "status"=>"OK",
+                                                 "status"=>"WARNING",
                                                  "host_display_name"=>"search.example.com",
                                                  "last_check"=>"2012-09-14 14:58:54" },
                                                { "passive_checks_enabled"=>true,
@@ -283,7 +283,23 @@ module Icinga
                                                  "active_checks_enabled"=>true,
                                                  "host"=>"search.example.com",
                                                  "duration"=>"9d 15h 19m 12s",
-                                                 "status"=>"OK",
+                                                 "status"=>"WARNING",
+                                                 "host_display_name"=>"search.example.com",
+                                                 "last_check"=>"2012-09-14 14:58:46" },
+                                               { "passive_checks_enabled"=>true,
+                                                 "notifications_enabled"=>false,
+                                                 "is_flapping"=>false,
+                                                 "in_scheduled_downtime"=>false,
+                                                 "attempts"=>"1/3",
+                                                 "has_been_acknowledged"=>false,
+                                                 "service"=>"Solr rollingrock - non empty search",
+                                                 "status_information"=>
+                                                 "HTTP OK: HTTP/1.1 200 OK - 26075 bytes in 0.012 second response time",
+                                                 "service_display_name"=>"Solr BAR - non empty search",
+                                                 "active_checks_enabled"=>true,
+                                                 "host"=>"search.example.com",
+                                                 "duration"=>"9d 15h 19m 12s",
+                                                 "status"=>"WARNING",
                                                  "host_display_name"=>"search.example.com",
                                                  "last_check"=>"2012-09-14 14:58:46" },
                                                { "host" => "hostB",
@@ -298,7 +314,7 @@ module Icinga
           args = [ "--mode", "services", "--warn", "1", "--crit", "1" ]
           rc = Icinga::CheckIcinga.new(args, stdopts).run
           rc.should == Icinga::EXIT_OK
-          stdout.string.should match(/ok: 1=ok, 0=fail, 2=other/i)
+          stdout.string.should match(/ok: 1=ok, 0=fail, 3=other/i)
         end
       end
     end
