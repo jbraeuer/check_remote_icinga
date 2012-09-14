@@ -1,3 +1,9 @@
+nagios-remote-icinga (0.2.1) unstable; urgency=low
+
+  * Dont count services with disabled notification
+
+ -- Jens Braeuer <braeuer.jens@gmail.com>  Thu, 14 Sep 2012 11:11:11 +0100
+
 nagios-remote-icinga (0.2.0) unstable; urgency=low
 
   * support for ack'ed services and scheduled downtimes
