@@ -101,6 +101,7 @@ module Icinga
     end
 
     def run
+      debug "Options are: #{@options.inspect}"
       case @options[:mode]
       when :help
         @stdout.puts @parser
