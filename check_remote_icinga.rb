@@ -30,7 +30,8 @@ module Icinga
     end
 
     def validate(resp)
-      raise "Did not get HTTP 200" unless resp.status == 200
+      raise "HTTP 401 - Password wrong?" if resp.status == 401
+      raise "Did not get HTTP 200 (but a #{resp.status})." unless resp.status == 200
       return resp
     end
 
