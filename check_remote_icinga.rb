@@ -144,6 +144,14 @@ module Icinga
         state = parse(validate(resp))
         result = { :ok => 0, :fail => 0 }
         state["status"]["host_status"].each do |h|
+          if h["in_scheduled_downtime"]
+            result[:other] += 1
+            next
+          end
+          if h["has_been_acknowledged"]
+            result[:other] += 1
+            next
+          end
           result[:ok]   += 1 if     h["status"] == "UP"
           result[:fail] += 1 unless h["status"] == "UP"
         end
@@ -204,7 +212,7 @@ module Icinga
         @stdout.puts "WARN: #{result[:fail]} #{msg} fail."
         return EXIT_WARN
       end
-      @stdout.puts "OK: #{result[:ok]}=ok, #{result[:fail]}=fail"
+      @stdout.puts "OK: #{result[:ok]}=ok, #{result[:fail]}=fail, #{result[:other]}=other"
       return EXIT_OK
     end
   end

@@ -285,13 +285,20 @@ module Icinga
                                                  "duration"=>"9d 15h 19m 12s",
                                                  "status"=>"OK",
                                                  "host_display_name"=>"search.example.com",
-                                                 "last_check"=>"2012-09-14 14:58:46" }]}}
+                                                 "last_check"=>"2012-09-14 14:58:46" },
+                                               { "host" => "hostB",
+                                                 "service" => "ActiveMQ MemoryPercentUsage",
+                                                 "status" => "OK",
+                                                 "last_check" => "01-25-2012 18:05:25",
+                                                 "duration" => "13d  6h 30m 42s",
+                                                 "attempts" => "1/5",
+                                                 "status_information" => "JMX OK PercentUsage=0"}]}}
           Excon.stub({:method => :get}, {:body => resp.to_json, :status => 200})
 
-          args = [ "--mode", "services", "--warn", "1", "--crit", "2", "--min", "2" ]
+          args = [ "--mode", "services", "--warn", "1", "--crit", "1" ]
           rc = Icinga::CheckIcinga.new(args, stdopts).run
-          rc.should == Icinga::EXIT_CRIT
-          stdout.string.should match(/ok: 0=ok, 0=fail, 2=other/i)
+          rc.should == Icinga::EXIT_OK
+          stdout.string.should match(/ok: 1=ok, 0=fail, 2=other/i)
         end
       end
     end
