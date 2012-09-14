@@ -160,6 +160,9 @@ module Icinga
       params = @options[:excon].merge({ :path => uri.path,
                                        :query => query,
                                        :headers => headers })
+      debug "Will fetch: #{uri.scheme}://#{uri.host}"
+      debug "With param: #{params.inspect}"
+
       result = { :timeout => true }
       begin
         resp = Timeout::timeout@options[:timeout] do
