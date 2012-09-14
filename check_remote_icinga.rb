@@ -143,18 +143,21 @@ module Icinga
         end
 
         state = parse(validate(resp))
-        result = { :ok => 0, :fail => 0 }
+        result = { :ok => 0, :fail => 0, :other => 0 }
         state["status"]["host_status"].each do |h|
-          if h["in_scheduled_downtime"]
-            result[:other] += 1
-            next
+          if h["status"] != "UP"
+            if h["in_scheduled_downtime"]
+              result[:other] += 1
+            elsif h["has_been_acknowledged"]
+              result[:other] += 1
+            elsif h["notifications_enabled"] == false
+              result[:other] += 1
+            else
+              result[:fail] += 1
+            end
+          else
+            result[:ok] += 1
           end
-          if h["has_been_acknowledged"]
-            result[:other] += 1
-            next
-          end
-          result[:ok]   += 1 if     h["status"] == "UP"
-          result[:fail] += 1 unless h["status"] == "UP"
         end
       rescue Timeout::Error => e
       end
