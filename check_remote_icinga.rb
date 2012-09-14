@@ -15,6 +15,7 @@ require 'uri'
 require 'base64'
 require 'json'
 require 'pp'
+require 'timeout'
 
 module Icinga
   EXIT_OK = 0
@@ -46,6 +47,7 @@ module Icinga
       @stdout, @stderr = opts.delete(:stdout), opts.delete(:stderr)
       @options = { :mode => nil,
                    :debug => false,
+                   :timeout => 10,
                    :min => -1,
                    :warn => 1,
                    :crit => 1,
@@ -78,6 +80,9 @@ module Icinga
         end
         opts.on("--status-cgi [path]", "path status.cgi (default: #{@options[:status_cgi]})") do |arg|
           @options[:status_cgi] = arg
+        end
+        opts.on("--timeout [seconds]", Integer, "Timeout for HTTP request (default: #{@options[:timeout]})") do |arg|
+          @options[:timeout] = arg
         end
         opts.on("-d", "--debug") do
           @options[:debug] = true
@@ -128,13 +133,20 @@ module Icinga
                                         :headers => headers })
       debug "Will fetch: #{uri.scheme}://#{uri.host}"
       debug "With param: #{params.inspect}"
-      resp = Excon.get("#{uri.scheme}://#{uri.host}", params)
 
-      state = parse(validate(resp))
-      result = { :ok => 0, :fail => 0 }
-      state["status"]["host_status"].each do |h|
-        result[:ok]   += 1 if     h["status"] == "UP"
-        result[:fail] += 1 unless h["status"] == "UP"
+      result = { :timeout => true }
+      begin
+        resp = Timeout::timeout@options[:timeout] do
+          Excon.get("#{uri.scheme}://#{uri.host}", params)
+        end
+
+        state = parse(validate(resp))
+        result = { :ok => 0, :fail => 0 }
+        state["status"]["host_status"].each do |h|
+          result[:ok]   += 1 if     h["status"] == "UP"
+          result[:fail] += 1 unless h["status"] == "UP"
+        end
+      rescue Timeout::Error => e
       end
       return check_limits(result, "hosts")
     end
@@ -147,18 +159,27 @@ module Icinga
       params = @options[:excon].merge({ :path => uri.path,
                                        :query => query,
                                        :headers => headers })
-      resp = Excon.get("#{uri.scheme}://#{uri.host}", params)
-
-      state = parse(validate(resp))
-      result = { :ok => 0, :fail => 0 }
-      state["status"]["service_status"].each do |h|
-        result[:ok]   += 1 if     h["status"] == "OK"
-        result[:fail] += 1 unless h["status"] == "OK"
+      result = { :timeout => true }
+      begin
+        resp = Timeout::timeout@options[:timeout] do
+          Excon.get("#{uri.scheme}://#{uri.host}", params)
+        end
+        state = parse(validate(resp))
+        result = { :ok => 0, :fail => 0 }
+        state["status"]["service_status"].each do |h|
+          result[:ok]   += 1 if     h["status"] == "OK"
+          result[:fail] += 1 unless h["status"] == "OK"
+        end
+      rescue Timeout::Error => e
       end
       return check_limits(result, "services")
     end
 
     def check_limits(result, msg)
+      if result[:timeout]
+        @stdout.puts "CRIT: Timeout after #{@options[:timeout]}"
+        return EXIT_CRIT
+      end
       if @options[:min] > result[:ok] + result[:fail]
         @stdout.puts "CRIT: Only #{result[:ok] + result[:fail]} #{msg} found."
         return EXIT_CRIT

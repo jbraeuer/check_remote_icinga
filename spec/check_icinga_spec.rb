@@ -127,6 +127,17 @@ module Icinga
           stdout.string.should match(/crit: only 2 hosts/i)
           rc.should == Icinga::EXIT_CRIT
         end
+
+        it "Will return critical, when timeout is met" do
+          Excon.stub({:method => :get}) do |_|
+            sleep 2
+          end
+
+          args = [ "--mode", "hosts", "--warn", "1", "--crit", "2", "--min", "2", "--timeout", "1" ]
+          rc = Icinga::CheckIcinga.new(args, stdopts).run
+          rc.should == Icinga::EXIT_CRIT
+          stdout.string.should match(/Timeout after/i)
+        end
       end
 
       describe "#check_services" do
@@ -229,6 +240,18 @@ module Icinga
           rc.should == Icinga::EXIT_CRIT
           stdout.string.should match(/crit: only 2 services found/i)
         end
+
+        it "Will return critical, when timeout is met" do
+          Excon.stub({:method => :get}) do |_|
+            sleep 2
+          end
+
+          args = [ "--mode", "services", "--warn", "1", "--crit", "2", "--min", "2", "--timeout", "1" ]
+          rc = Icinga::CheckIcinga.new(args, stdopts).run
+          rc.should == Icinga::EXIT_CRIT
+          stdout.string.should match(/Timeout after/i)
+        end
+
       end
     end
   end
