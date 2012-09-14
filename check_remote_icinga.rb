@@ -58,31 +58,31 @@ module Icinga
                    :password => nil }.merge(opts)
 
       @parser = OptionParser.new("Check Icinga - Icinga/Nagios plugin to Icinga") do |opts|
-        opts.on("--mode [mode]", @modes, "Check mode. Either 'hosts' or 'services'.") do |arg|
+        opts.on("--mode MODE", @modes, "Check mode. Either 'hosts' or 'services'.") do |arg|
           @options[:mode] = arg
         end
-        opts.on("--min [N]", Integer, "Number of hosts/services to expect.") do |arg|
+        opts.on("--min N", Integer, "Number of hosts/services to expect.") do |arg|
           @options[:min] = arg
         end
-        opts.on("--warn [N]", Integer, "Warning level") do |arg|
+        opts.on("--warn N", Integer, "Warning level") do |arg|
           @options[:warn] = arg
         end
-        opts.on("--crit [N]", Integer, "Critical level") do |arg|
+        opts.on("--crit N", Integer, "Critical level") do |arg|
           @options[:crit] = arg
         end
-        opts.on("--username [name]", "HTTP username") do |arg|
+        opts.on("--username NAME", "HTTP username") do |arg|
           @options[:username] = arg
         end
-        opts.on("--password [password]", "HTTP password") do |arg|
+        opts.on("--password password", "HTTP password") do |arg|
           @options[:password] = arg
         end
-        opts.on("--url [url]", "URL (default: #{@options[:url]})") do |arg|
+        opts.on("--url URL", "URL (default: #{@options[:url]})") do |arg|
           @options[:url] = arg
         end
-        opts.on("--status-cgi [path]", "path status.cgi (default: #{@options[:status_cgi]})") do |arg|
+        opts.on("--status-cgi PATH", "path status.cgi (default: #{@options[:status_cgi]})") do |arg|
           @options[:status_cgi] = arg
         end
-        opts.on("--timeout [seconds]", Integer, "Timeout for HTTP request (default: #{@options[:timeout]})") do |arg|
+        opts.on("--timeout SECONDS", Integer, "Timeout for HTTP request (default: #{@options[:timeout]})") do |arg|
           @options[:timeout] = arg
         end
         opts.on("-d", "--debug") do
