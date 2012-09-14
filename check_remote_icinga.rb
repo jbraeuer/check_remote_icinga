@@ -169,10 +169,18 @@ module Icinga
           Excon.get("#{uri.scheme}://#{uri.host}", params)
         end
         state = parse(validate(resp))
-        result = { :ok => 0, :fail => 0 }
+        result = { :ok => 0, :fail => 0, :other => 0 }
         state["status"]["service_status"].each do |h|
-          result[:ok]   += 1 if     h["status"] == "OK"
-          result[:fail] += 1 unless h["status"] == "OK"
+          if h["in_scheduled_downtime"]
+            result[:other] += 1
+            next
+          end
+          if h["has_been_acknowledged"]
+            result[:other] += 1
+            next
+          end
+          result[:ok]    += 1 if     h["status"] == "OK"
+          result[:fail]  += 1 unless h["status"] == "OK"
         end
       rescue Timeout::Error => e
       end

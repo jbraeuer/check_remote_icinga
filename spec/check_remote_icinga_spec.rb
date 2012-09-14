@@ -252,6 +252,47 @@ module Icinga
           stdout.string.should match(/Timeout after/i)
         end
 
+        it "Will return OK, when all critical services have been acknowledged" do
+          resp = {
+            "cgi_json_version" => "1.7.1",
+            "status" => { "service_status" => [{ "passive_checks_enabled"=>true,
+                                                 "notifications_enabled"=>true,
+                                                 "is_flapping"=>false,
+                                                 "in_scheduled_downtime"=>true,
+                                                 "attempts"=>"1/3",
+                                                 "has_been_acknowledged"=>false,
+                                                 "service"=>"Solr FOO - non empty search",
+                                                 "status_information"=> "HTTP OK: HTTP/1.1 200 OK - 13595 bytes in 0.012 second response time",
+                                                 "service_display_name"=>"Solr FOO - non empty search",
+                                                 "active_checks_enabled"=>true,
+                                                 "host"=>"search.example.com",
+                                                 "duration"=>"9d 15h 19m 44s",
+                                                 "status"=>"OK",
+                                                 "host_display_name"=>"search.example.com",
+                                                 "last_check"=>"2012-09-14 14:58:54" },
+                                               { "passive_checks_enabled"=>true,
+                                                 "notifications_enabled"=>true,
+                                                 "is_flapping"=>false,
+                                                 "in_scheduled_downtime"=>false,
+                                                 "attempts"=>"1/3",
+                                                 "has_been_acknowledged"=>true,
+                                                 "service"=>"Solr rollingrock - non empty search",
+                                                 "status_information"=>
+                                                 "HTTP OK: HTTP/1.1 200 OK - 26075 bytes in 0.012 second response time",
+                                                 "service_display_name"=>"Solr BAR - non empty search",
+                                                 "active_checks_enabled"=>true,
+                                                 "host"=>"search.example.com",
+                                                 "duration"=>"9d 15h 19m 12s",
+                                                 "status"=>"OK",
+                                                 "host_display_name"=>"search.example.com",
+                                                 "last_check"=>"2012-09-14 14:58:46" }]}}
+          Excon.stub({:method => :get}, {:body => resp.to_json, :status => 200})
+
+          args = [ "--mode", "services", "--warn", "1", "--crit", "2", "--min", "2" ]
+          rc = Icinga::CheckIcinga.new(args, stdopts).run
+          rc.should == Icinga::EXIT_CRIT
+          stdout.string.should match(/ok: 0=ok, 0=fail, 2=other/i)
+        end
       end
     end
   end
