@@ -64,7 +64,7 @@ module Icinga
                                 "status"=>"DOWN",
                                 "last_check"=>"01-25-2012 17:15:22",
                                 "duration"=>"9d  8h 18m 50s",
-                                "attempts"=>"1/3",
+                                "attempts"=>"3/3",
                                 "status_information"=> "HTTP OK"},
                               {"host"=>"host2",
                                 "status"=>"UP",
@@ -80,6 +80,30 @@ module Icinga
           stdout.string.should match(/warn: 1 hosts fail/i)
         end
 
+        it "Will return warning, when warning limit is reached (soft state enabled)" do
+          resp = {
+            "cgi_json_version"=>"1.5.0",
+            "status"=>
+            {"host_status"=> [{"host"=>"host1",
+                                "status"=>"DOWN",
+                                "last_check"=>"01-25-2012 17:15:22",
+                                "duration"=>"9d  8h 18m 50s",
+                                "attempts"=>"2/3",
+                                "status_information"=> "HTTP OK"},
+                              {"host"=>"host2",
+                                "status"=>"UP",
+                                "last_check"=>"01-25-2012 17:15:32",
+                                "duration"=>"9d  7h 58m  4s",
+                                "attempts"=>"1/3",
+                                "status_information"=>"PING OK - Packet loss = 0%, RTA = 0.44 ms"}]}}
+          Excon.stub({:method => :get}, {:body => resp.to_json, :status => 200})
+
+          args = [ "--mode", "hosts", "--warn", "1", "--crit", "2", "--min", "2", "--trigger-soft-state" ]
+          rc = Icinga::CheckIcinga.new(args, stdopts).run
+          rc.should == Icinga::EXIT_WARN
+          stdout.string.should match(/warn: 1 hosts fail/i)
+        end
+
         it "Will return critial, when critical limit is reached" do
           resp = {
             "cgi_json_version"=>"1.5.0",
@@ -88,13 +112,13 @@ module Icinga
                                 "status"=>"DOWN",
                                 "last_check"=>"01-25-2012 17:15:22",
                                 "duration"=>"9d  8h 18m 50s",
-                                "attempts"=>"1/3",
+                                "attempts"=>"3/3",
                                 "status_information"=> "HTTP OK"},
                               {"host"=>"host2",
                                 "status"=>"DOWN",
                                 "last_check"=>"01-25-2012 17:15:32",
                                 "duration"=>"9d  7h 58m  4s",
-                                "attempts"=>"1/3",
+                                "attempts"=>"3/3",
                                 "status_information"=>"PING OK - Packet loss = 0%, RTA = 0.44 ms"}]}}
           Excon.stub({:method => :get}, {:body => resp.to_json, :status => 200})
 
@@ -174,7 +198,7 @@ module Icinga
                                                  "status" => "WARNING",
                                                  "last_check" => "01-25-2012 18:05:30",
                                                  "duration" => "15d 19h 55m  1s",
-                                                 "attempts" => "1/5",
+                                                 "attempts" => "5/5",
                                                  "status_information" => "HTTP OK"},
                                                { "host" => "hostB",
                                                  "service" => "ActiveMQ MemoryPercentUsage",
@@ -199,14 +223,14 @@ module Icinga
                                                  "status" => "WARNING",
                                                  "last_check" => "01-25-2012 18:05:30",
                                                  "duration" => "15d 19h 55m  1s",
-                                                 "attempts" => "1/5",
+                                                 "attempts" => "5/5",
                                                  "status_information" => "HTTP OK"},
                                                { "host" => "hostB",
                                                  "service" => "ActiveMQ MemoryPercentUsage",
                                                  "status" => "CRITICAL",
                                                  "last_check" => "01-25-2012 18:05:25",
                                                  "duration" => "13d  6h 30m 42s",
-                                                 "attempts" => "1/5",
+                                                 "attempts" => "5/5",
                                                  "status_information" => "JMX OK PercentUsage=0"}]}}
           Excon.stub({:method => :get}, {:body => resp.to_json, :status => 200})
 

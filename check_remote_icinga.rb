@@ -52,6 +52,7 @@ module Icinga
                    :min => -1,
                    :warn => 1,
                    :crit => 1,
+                   :trigger_soft_state => false,
                    :url => "http://localhost",
                    :status_cgi => "cgi-bin/icinga/status.cgi",
                    :username => nil,
@@ -84,6 +85,9 @@ module Icinga
         end
         opts.on("--timeout SECONDS", Integer, "Timeout for HTTP request (default: #{@options[:timeout]})") do |arg|
           @options[:timeout] = arg
+        end
+        opts.on("--trigger-soft-state", "Trigger on soft-state already") do
+          @options[:trigger_soft_state] = true
         end
         opts.on("-d", "--debug") do
           @options[:debug] = true
@@ -130,6 +134,11 @@ module Icinga
       return state
     end
 
+    def is_last_attempt?(object_state)
+      cur, max = object_state["attempts"].split("/")
+      return cur == max
+    end
+
     def analyze_state(memory, object_state, ok_string)
       if object_state["status"] != ok_string
         if object_state["in_scheduled_downtime"]
@@ -138,8 +147,10 @@ module Icinga
           memory[:other] += 1
         elsif object_state["notifications_enabled"] == false
           memory[:other] += 1
-        else
+        elsif @options[:trigger_soft_state] or is_last_attempt?(object_state)
           memory[:fail] += 1
+        else
+          memory[:ok] += 1
         end
       else
         memory[:ok] += 1
