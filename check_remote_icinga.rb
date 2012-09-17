@@ -213,18 +213,18 @@ module Icinga
         return EXIT_CRIT
       end
       if @options[:min] > result[:ok] + result[:fail]
-        @stdout.puts "CRIT: Only #{result[:ok] + result[:fail]} #{msg} found."
+        @stdout.puts "CRIT: Only #{result[:ok] + result[:fail]} #{msg} found (#{result[:ok]}=ok, #{result[:fail]}=fail, #{result[:other]}=other)."
         return EXIT_CRIT
       end
       if result[:fail] >= @options[:crit]
-        @stdout.puts "CRIT: #{result[:fail]} #{msg} fail."
+        @stdout.puts "CRIT: #{result[:fail]} #{msg} fail (#{result[:ok]}=ok, #{result[:fail]}=fail, #{result[:other]}=other)."
         return EXIT_CRIT
       end
       if result[:fail] >= @options[:warn]
-        @stdout.puts "WARN: #{result[:fail]} #{msg} fail."
+        @stdout.puts "WARN: #{result[:fail]} #{msg} fail (#{result[:ok]}=ok, #{result[:fail]}=fail, #{result[:other]}=other)."
         return EXIT_WARN
       end
-      @stdout.puts "OK: #{result[:ok]}=ok, #{result[:fail]}=fail, #{result[:other]}=other"
+      @stdout.puts "OK: #{result[:ok]}=ok, #{result[:fail]}=fail, #{result[:other]}=other."
       return EXIT_OK
     end
   end
