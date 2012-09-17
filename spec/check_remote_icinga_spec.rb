@@ -277,8 +277,7 @@ module Icinga
                                                  "attempts"=>"1/3",
                                                  "has_been_acknowledged"=>true,
                                                  "service"=>"Solr rollingrock - non empty search",
-                                                 "status_information"=>
-                                                 "HTTP OK: HTTP/1.1 200 OK - 26075 bytes in 0.012 second response time",
+                                                 "status_information"=>"HTTP OK: HTTP/1.1 200 OK - 26075 bytes in 0.012 second response time",
                                                  "service_display_name"=>"Solr BAR - non empty search",
                                                  "active_checks_enabled"=>true,
                                                  "host"=>"search.example.com",
@@ -293,8 +292,7 @@ module Icinga
                                                  "attempts"=>"1/3",
                                                  "has_been_acknowledged"=>false,
                                                  "service"=>"Solr rollingrock - non empty search",
-                                                 "status_information"=>
-                                                 "HTTP OK: HTTP/1.1 200 OK - 26075 bytes in 0.012 second response time",
+                                                 "status_information"=>"HTTP OK: HTTP/1.1 200 OK - 26075 bytes in 0.012 second response time",
                                                  "service_display_name"=>"Solr BAR - non empty search",
                                                  "active_checks_enabled"=>true,
                                                  "host"=>"search.example.com",
