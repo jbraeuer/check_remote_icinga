@@ -138,7 +138,7 @@ module Icinga
           memory[:other] += 1
         elsif object_state["notifications_enabled"] == false
           memory[:other] += 1
-            else
+        else
           memory[:fail] += 1
         end
       else
