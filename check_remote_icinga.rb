@@ -124,6 +124,29 @@ module Icinga
       return {}
     end
 
+    def init_state
+      state = { :timeout => true }
+      state.default = 0
+      return state
+    end
+
+    def analyze_state(memory, object_state, ok_string)
+      if object_state["status"] != ok_string
+        if object_state["in_scheduled_downtime"]
+          memory[:other] += 1
+            elsif object_state["has_been_acknowledged"]
+          memory[:other] += 1
+        elsif object_state["notifications_enabled"] == false
+          memory[:other] += 1
+            else
+          memory[:fail] += 1
+        end
+      else
+        memory[:ok] += 1
+      end
+      return memory
+    end
+
     def check_hosts
       query = { :hostgroup => "all",
                 :style => "hostdetail",
@@ -136,29 +159,14 @@ module Icinga
       debug "Will fetch: #{uri.scheme}://#{uri.host}"
       debug "With param: #{params.inspect}"
 
-      result = { :timeout => true }
+      result = init_state
       begin
         resp = Timeout::timeout@options[:timeout] do
           Excon.get("#{uri.scheme}://#{uri.host}", params)
         end
-
+        result[:timeout] = false
         state = parse(validate(resp))
-        result = { :ok => 0, :fail => 0, :other => 0 }
-        state["status"]["host_status"].each do |h|
-          if h["status"] != "UP"
-            if h["in_scheduled_downtime"]
-              result[:other] += 1
-            elsif h["has_been_acknowledged"]
-              result[:other] += 1
-            elsif h["notifications_enabled"] == false
-              result[:other] += 1
-            else
-              result[:fail] += 1
-            end
-          else
-            result[:ok] += 1
-          end
-        end
+        result = state["status"]["host_status"].inject(result) { |memo, s| analyze_state(memo, s, "UP") }
       rescue Timeout::Error => e
       end
       return check_limits(result, "hosts")
@@ -175,28 +183,14 @@ module Icinga
       debug "Will fetch: #{uri.scheme}://#{uri.host}"
       debug "With param: #{params.inspect}"
 
-      result = { :timeout => true }
+      result = init_state
       begin
         resp = Timeout::timeout@options[:timeout] do
           Excon.get("#{uri.scheme}://#{uri.host}", params)
         end
+        result[:timeout] = false
         state = parse(validate(resp))
-        result = { :ok => 0, :fail => 0, :other => 0 }
-        state["status"]["service_status"].each do |h|
-          if h["status"] != "OK"
-            if h["in_scheduled_downtime"]
-              result[:other] += 1
-            elsif h["has_been_acknowledged"]
-              result[:other] += 1
-            elsif h["notifications_enabled"] == false
-              result[:other] += 1
-            else
-              result[:fail] += 1
-            end
-          else
-            result[:ok] += 1
-          end
-        end
+        result = state["status"]["service_status"].inject(result) { |memo, s| analyze_state(memo, s, "OK") }
       rescue Timeout::Error => e
       end
       return check_limits(result, "services")
