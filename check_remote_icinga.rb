@@ -52,6 +52,7 @@ module Icinga
                    :min => -1,
                    :warn => 1,
                    :crit => 1,
+                   :exclude => [],
                    :trigger_soft_state => false,
                    :url => "http://localhost",
                    :status_cgi => "cgi-bin/icinga/status.cgi",
@@ -88,6 +89,9 @@ module Icinga
         end
         opts.on("--trigger-soft-state", "Trigger on soft-state already") do
           @options[:trigger_soft_state] = true
+        end
+        opts.on("--exclude PATTERN", "Exclude hosts/service where the name matches the pattern") do |p|
+          @options[:exclude] << Regexp.new(p)
         end
         opts.on("-d", "--debug") do
           @options[:debug] = true
@@ -139,7 +143,7 @@ module Icinga
       return cur == max
     end
 
-    def analyze_state(memory, object_state, ok_string)
+    def analyze_state(memory, object_state, ok_string, exclude_key)
       if object_state["status"] != ok_string
         if object_state["in_scheduled_downtime"]
           memory[:other] += 1
@@ -149,6 +153,8 @@ module Icinga
           memory[:other] += 1
         elsif @options[:trigger_soft_state] or is_last_attempt?(object_state)
           memory[:fail] += 1
+        elsif not @options[:exclude].select {|ex| ex.match(object_state[exclude_key])}.empty?
+          memory[:other] += 1
         else
           memory[:ok] += 1
         end
@@ -177,7 +183,7 @@ module Icinga
         end
         result[:timeout] = false
         state = parse(validate(resp))
-        result = state["status"]["host_status"].inject(result) { |memo, s| analyze_state(memo, s, "UP") }
+        result = state["status"]["host_status"].inject(result) { |memo, s| analyze_state(memo, s, "UP", "host") }
       rescue Timeout::Error => e
       end
       return check_limits(result, "hosts")
@@ -201,7 +207,7 @@ module Icinga
         end
         result[:timeout] = false
         state = parse(validate(resp))
-        result = state["status"]["service_status"].inject(result) { |memo, s| analyze_state(memo, s, "OK") }
+        result = state["status"]["service_status"].inject(result) { |memo, s| analyze_state(memo, s, "OK", "service") }
       rescue Timeout::Error => e
       end
       return check_limits(result, "services")

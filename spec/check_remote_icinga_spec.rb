@@ -162,6 +162,31 @@ module Icinga
           rc.should == Icinga::EXIT_CRIT
           stdout.string.should match(/Timeout after/i)
         end
+
+        it "Will return ok, when all non-good hosts are excluded" do
+          resp = {
+            "cgi_json_version"=>"1.5.0",
+            "status"=>
+            {"host_status"=> [{"host"=>"unstable backend",
+                                "status"=>"DOWN",
+                                "last_check"=>"01-25-2012 17:15:22",
+                                "duration"=>"9d  8h 18m 50s",
+                                "attempts"=>"1/3",
+                                "status_information"=> "HTTP OK"},
+                              {"host"=>"host2",
+                                "status"=>"UP",
+                                "last_check"=>"01-25-2012 17:15:32",
+                                "duration"=>"9d  7h 58m  4s",
+                                "attempts"=>"1/3",
+                                "status_information"=>"PING OK - Packet loss = 0%, RTA = 0.44 ms"}]}}
+          Excon.stub({:method => :get}, {:body => resp.to_json, :status => 200})
+
+          args = [ "--mode", "hosts", "--min", "1", "--exclude", "unstable"]
+          rc = Icinga::CheckIcinga.new(args, stdopts).run
+
+          rc.should == Icinga::EXIT_OK
+          stdout.string.should match(/ok: 1=ok, 0=fail, 1=other/i)
+        end
       end
 
       describe "#check_services" do
@@ -338,6 +363,32 @@ module Icinga
           rc.should == Icinga::EXIT_OK
           stdout.string.should match(/ok: 1=ok, 0=fail, 3=other/i)
         end
+
+        it "Will return ok, when non-good services are excluded" do
+          resp = {
+            "cgi_json_version" => "1.5.0",
+            "status" => { "service_status" => [{ "host" => "hostA",
+                                                 "service" => "HTTP",
+                                                 "status" => "WARNING",
+                                                 "last_check" => "01-25-2012 18:05:30",
+                                                 "duration" => "15d 19h 55m  1s",
+                                                 "attempts" => "1/5",
+                                                 "status_information" => "HTTP OK"},
+                                               { "host" => "hostB",
+                                                 "service" => "ActiveMQ MemoryPercentUsage",
+                                                 "status" => "OK",
+                                                 "last_check" => "01-25-2012 18:05:25",
+                                                 "duration" => "13d  6h 30m 42s",
+                                                 "attempts" => "1/5",
+                                                 "status_information" => "JMX OK PercentUsage=0"}]}}
+          Excon.stub({:method => :get}, {:body => resp.to_json, :status => 200})
+
+          args = [ "--mode", "services", "--warn", "1", "--crit", "2", "--min", "1", "--exclude", "HTTP" ]
+          rc = Icinga::CheckIcinga.new(args, stdopts).run
+          rc.should == Icinga::EXIT_OK
+          stdout.string.should match(/ok: 1=ok, 0=fail, 1=other/i)
+        end
+
       end
     end
   end
