@@ -14,6 +14,7 @@ instances are fine.
 
 ```
 gem install excon
+gem install json
 cp check_remote_icinga.rb /usr/lib/nagios/plugins
 ```
 
