@@ -1,4 +1,4 @@
-#! /usr/bin/ruby
+#! /usr/bin/ruby1.9.1
 
 # A Nagios/Icinga plugin to check remote Nagios/Icinga installations.
 #

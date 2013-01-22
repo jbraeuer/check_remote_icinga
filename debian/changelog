@@ -1,3 +1,9 @@
+nagios-remote-icinga (0.3.0) unstable; urgency=low
+
+  * Ruby 1.9
+
+ -- Jens Braeuer <braeuer.jens@gmail.com>  Thu, 05 Oct 2012 11:11:11 +0100
+
 nagios-remote-icinga (0.2.4) unstable; urgency=low
 
   * Add --exclude
